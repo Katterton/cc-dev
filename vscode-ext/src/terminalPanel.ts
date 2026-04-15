@@ -112,8 +112,8 @@ export class TerminalPanel {
     updateTerminal(state: TerminalState): void {
         if (this.disposed) { return; }
         this.panel.webview.postMessage({
-            type: 'terminalSync',
             ...state,
+            type: 'terminalSync',
         });
     }
 

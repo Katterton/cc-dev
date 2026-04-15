@@ -270,7 +270,11 @@ public class CCDevSession {
             return;
         }
 
-        Path targetPath = computerDir.resolve(sanitizePath(path));
+        Path targetPath = computerDir.resolve(sanitizePath(path)).normalize();
+        if (!targetPath.startsWith(computerDir)) {
+            send(Messages.error("Access denied: path outside computer directory"));
+            return;
+        }
         JsonArray entries = new JsonArray();
 
         try {
@@ -307,9 +311,12 @@ public class CCDevSession {
             return;
         }
 
-        Path targetPath = computerDir.resolve(sanitizePath(path));
+        Path targetPath = computerDir.resolve(sanitizePath(path)).normalize();
+        if (!targetPath.startsWith(computerDir)) {
+            send(Messages.error("Access denied: path outside computer directory"));
+            return;
+        }
         try {
-            String content = Files.readString(targetPath, StandardCharsets.UTF_8);
             send(Messages.fileRead(computerId, path, content));
         } catch (IOException e) {
             send(Messages.error("Error reading file: " + e.getMessage()));
@@ -327,7 +334,12 @@ public class CCDevSession {
             return;
         }
 
-        Path targetPath = computerDir.resolve(sanitizePath(path));
+        Path targetPath = computerDir.resolve(sanitizePath(path)).normalize();
+        if (!targetPath.startsWith(computerDir)) {
+            send(Messages.error("Access denied: path outside computer directory"));
+            send(Messages.fileWriteAck(computerId, path, false));
+            return;
+        }
         try {
             Files.createDirectories(targetPath.getParent());
             Files.writeString(targetPath, content, StandardCharsets.UTF_8);
@@ -366,22 +378,49 @@ public class CCDevSession {
 
     /**
      * Sanitize a path to prevent directory traversal.
+     * Uses Path.normalize() and validates the result stays within the base directory.
      */
     private String sanitizePath(String path) {
-        // Remove leading slashes and prevent traversal
-        String sanitized = path.replace("\\", "/");
+        // Decode any percent-encoded characters
+        String decoded = path;
+        try {
+            decoded = java.net.URLDecoder.decode(path, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            // If decoding fails, use the raw string
+        }
+
+        // Remove leading slashes and backslashes
+        String sanitized = decoded.replace("\\", "/");
         while (sanitized.startsWith("/")) {
             sanitized = sanitized.substring(1);
         }
-        // Remove any ".." components
+
+        // Remove any ".." components manually first
         String[] parts = sanitized.split("/");
         StringBuilder result = new StringBuilder();
         for (String part : parts) {
-            if (part.equals("..") || part.equals(".") || part.isEmpty()) continue;
-            if (!result.isEmpty()) result.append("/");
+            if (part.equals("..") || part.equals(".") || part.isEmpty()) {
+                continue;
+            }
+            if (!result.isEmpty()) {
+                result.append("/");
+            }
             result.append(part);
         }
-        return result.toString();
+
+        // Use Path.normalize() as a second check and verify no traversal occurred
+        String normalized = result.toString();
+        if (normalized.isEmpty()) {
+            return "";
+        }
+
+        java.nio.file.Path normalizedPath = java.nio.file.Path.of(normalized).normalize();
+        // Ensure the normalized path doesn't start with ".." (traversal attempt)
+        if (normalizedPath.toString().startsWith("..")) {
+            return "";
+        }
+
+        return normalizedPath.toString();
     }
 
     private void send(String message) {

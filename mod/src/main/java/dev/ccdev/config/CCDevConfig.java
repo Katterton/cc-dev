@@ -32,7 +32,7 @@ public class CCDevConfig {
 
         token = builder
                 .comment("Shared secret token for authentication. Change this to something unique!")
-                .define("token", "change-me-" + Long.toHexString(System.nanoTime()));
+                .define("token", "change-me-" + java.util.UUID.randomUUID().toString());
 
         builder.pop();
     }

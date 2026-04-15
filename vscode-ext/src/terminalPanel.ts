@@ -176,7 +176,7 @@ export class TerminalPanel {
         #cursor {
             position: absolute;
             background: #F0F0F0;
-            animation: blink 0.5s step-end infinite;
+            animation: blink 0.8s step-end infinite;
         }
         @keyframes blink {
             50% { opacity: 0; }

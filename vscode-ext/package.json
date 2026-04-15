@@ -1,0 +1,104 @@
+{
+  "name": "ccdev",
+  "displayName": "CC:Dev — VSCode Bridge for CC:Tweaked",
+  "description": "Connect to CC:Tweaked computers/turtles in Minecraft. Mirror terminals, edit Lua files with Copilot, and control computers remotely.",
+  "version": "0.1.0",
+  "publisher": "ccdev",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onFileSystem:ccdev"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ccdev.connect",
+        "title": "CC:Dev: Connect to Server"
+      },
+      {
+        "command": "ccdev.disconnect",
+        "title": "CC:Dev: Disconnect"
+      },
+      {
+        "command": "ccdev.openTerminal",
+        "title": "CC:Dev: Open Computer Terminal"
+      },
+      {
+        "command": "ccdev.refreshComputers",
+        "title": "CC:Dev: Refresh Computer List",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ccdev",
+          "title": "CC:Dev",
+          "icon": "media/turtle-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "ccdev": [
+        {
+          "id": "ccdev.computers",
+          "name": "Computers"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "ccdev.refreshComputers",
+          "when": "view == ccdev.computers",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "ccdev.openTerminal",
+          "when": "view == ccdev.computers",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "CC:Dev",
+      "properties": {
+        "ccdev.host": {
+          "type": "string",
+          "default": "localhost",
+          "description": "Hostname of the Minecraft server running CC:Dev mod"
+        },
+        "ccdev.port": {
+          "type": "number",
+          "default": 42069,
+          "description": "Port of the CC:Dev WebSocket server"
+        },
+        "ccdev.token": {
+          "type": "string",
+          "default": "",
+          "description": "Authentication token (must match the mod config)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "ws": "^8.17.1"
+  }
+}

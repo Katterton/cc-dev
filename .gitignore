@@ -1,0 +1,28 @@
+# Build artifacts
+build/
+.gradle/
+out/
+run/
+logs/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Mod artifacts
+mod/src/generated/
+
+# VSCode extension
+vscode-ext/node_modules/
+vscode-ext/out/
+vscode-ext/*.vsix
+
+# Gradle
+mod/.gradle/
+mod/build/
